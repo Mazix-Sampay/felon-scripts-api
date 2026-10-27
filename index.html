@@ -1,0 +1,263 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Felon Scripts API</title>
+<meta name="description" content="Документация Lua-скриптов клиента Felon: события, client, player, world, modules, render, input, timer.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #f6f6fa; --panel: #ffffff; --panel2: #f0f0f6; --text: #16161d; --muted: #6b6b7b;
+  --line: #e4e4ee; --accent: #7c5cff; --accent-soft: rgba(124, 92, 255, .12); --code: #f3f1ff;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0d0d12; --panel: #15151c; --panel2: #1b1b24; --text: #ececf3; --muted: #8d8da0;
+    --line: #262633; --accent: #9b84ff; --accent-soft: rgba(155, 132, 255, .14); --code: #1d1b2b;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0d0d12; --panel: #15151c; --panel2: #1b1b24; --text: #ececf3; --muted: #8d8da0;
+  --line: #262633; --accent: #9b84ff; --accent-soft: rgba(155, 132, 255, .14); --code: #1d1b2b;
+}
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; scroll-padding-top: 76px; }
+body { margin: 0; background: var(--bg); color: var(--text); font: 15px/1.6 Inter, system-ui, sans-serif; }
+a { color: var(--accent); text-decoration: none; }
+code, pre { font-family: "JetBrains Mono", ui-monospace, monospace; font-size: 13px; }
+:not(pre) > code { background: var(--code); padding: 1px 6px; border-radius: 5px; }
+header { position: sticky; top: 0; z-index: 10; display: flex; align-items: center; gap: 14px; padding: 12px 24px;
+  background: color-mix(in srgb, var(--bg) 85%, transparent); backdrop-filter: blur(12px); border-bottom: 1px solid var(--line); }
+.logo { display: flex; align-items: center; gap: 10px; font-weight: 700; letter-spacing: -.2px; }
+.logo span { width: 28px; height: 28px; border-radius: 8px; background: var(--accent); color: #fff; display: grid; place-items: center; font-size: 14px; }
+.search { margin-left: auto; width: min(320px, 46vw); padding: 8px 12px; border-radius: 9px; border: 1px solid var(--line); background: var(--panel); color: var(--text); font: inherit; }
+.theme { border: 1px solid var(--line); background: var(--panel); color: var(--text); border-radius: 9px; padding: 7px 10px; cursor: pointer; font: inherit; }
+.wrap { display: grid; grid-template-columns: 220px minmax(0, 1fr); gap: 32px; max-width: 1180px; margin: 0 auto; padding: 24px; }
+nav { position: sticky; top: 76px; align-self: start; display: flex; flex-direction: column; gap: 2px; }
+nav a { color: var(--muted); padding: 6px 10px; border-radius: 7px; font-weight: 500; }
+nav a:hover, nav a.on { background: var(--accent-soft); color: var(--text); }
+main { min-width: 0; }
+.hero { padding: 28px; border-radius: 16px; background: linear-gradient(135deg, var(--accent-soft), transparent 70%), var(--panel); border: 1px solid var(--line); margin-bottom: 28px; }
+.hero h1 { margin: 0 0 6px; font-size: 30px; letter-spacing: -.5px; }
+.hero p { margin: 0; color: var(--muted); max-width: 640px; }
+.chips { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 16px; }
+.chip { padding: 4px 10px; border-radius: 999px; background: var(--panel2); border: 1px solid var(--line); font-size: 13px; color: var(--muted); }
+section { margin-bottom: 36px; }
+h2 { font-size: 21px; letter-spacing: -.3px; margin: 0 0 12px; display: flex; align-items: center; gap: 10px; }
+h2 code { font-size: 16px; }
+p.lead { color: var(--muted); margin: -4px 0 14px; }
+.fn { display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr); gap: 16px; padding: 11px 14px; border: 1px solid var(--line); background: var(--panel); border-radius: 10px; margin-bottom: 6px; }
+.fn code { background: none; padding: 0; color: var(--text); font-weight: 500; overflow-wrap: anywhere; }
+.fn div:last-child { color: var(--muted); }
+pre { background: var(--code); border: 1px solid var(--line); border-radius: 10px; padding: 14px 16px; overflow-x: auto; margin: 10px 0 0; }
+.kw { color: var(--accent); font-weight: 500; } .str { color: #2fa36b; } .cm { color: var(--muted); font-style: italic; } .num { color: #d9822b; }
+.note { padding: 12px 14px; border-radius: 10px; background: var(--accent-soft); border: 1px solid var(--line); }
+.hidden { display: none !important; }
+footer { color: var(--muted); font-size: 13px; padding: 24px; text-align: center; border-top: 1px solid var(--line); }
+@media (max-width: 860px) {
+  .wrap { grid-template-columns: 1fr; padding: 16px; }
+  nav { position: static; flex-direction: row; flex-wrap: wrap; }
+  .fn { grid-template-columns: 1fr; gap: 4px; }
+  header { padding: 10px 16px; }
+  .logo b { display: none; }
+}
+</style>
+</head>
+<body>
+<header>
+  <div class="logo"><span>F</span><b>Felon Scripts API</b></div>
+  <input class="search" id="q" placeholder="Поиск функции...  (например, player.pos)">
+  <button class="theme" id="theme" title="Тема">◐</button>
+</header>
+<div class="wrap">
+  <nav id="nav">
+    <a href="#start">Быстрый старт</a>
+    <a href="#meta">Описание скрипта</a>
+    <a href="#events">События</a>
+    <a href="#client">client</a>
+    <a href="#player">player</a>
+    <a href="#world">world</a>
+    <a href="#modules">modules</a>
+    <a href="#render">render</a>
+    <a href="#input">input</a>
+    <a href="#timer">timer</a>
+    <a href="#color">color</a>
+    <a href="#limits">Ограничения</a>
+    <a href="#examples">Примеры</a>
+  </nav>
+  <main>
+    <div class="hero">
+      <h1>Скрипты Felon на Lua</h1>
+      <p>Кладёшь <code>.lua</code> в <code>Felon/scripts</code>, включаешь во вкладке <b>Scripts</b> в ClickGUI - и скрипт получает события игры, рисует на экране и в мире, управляет модулями.</p>
+      <div class="chips"><span class="chip">Lua 5.2 (LuaJ)</span><span class="chip">песочница</span><span class="chip">горячая перезагрузка</span><span class="chip">консоль и ошибки во вкладке</span></div>
+    </div>
+
+    <section id="start">
+      <h2>Быстрый старт</h2>
+      <p class="lead">ClickGUI → <b>Scripts</b> → <b>Папка</b>, создай <code>hello.lua</code>, нажми <b>Обновить</b> и включи переключателем.</p>
+<pre><span class="kw">script</span> = { name = <span class="str">"Привет"</span>, author = <span class="str">"я"</span>, description = <span class="str">"Первый скрипт"</span> }
+
+events.on(<span class="str">"enable"</span>, <span class="kw">function</span>()
+  client.print(<span class="str">"Скрипт включён!"</span>)
+<span class="kw">end</span>)
+
+events.on(<span class="str">"render2d"</span>, <span class="kw">function</span>()
+  render.text(<span class="str">"Hello, Felon!"</span>, <span class="num">10</span>, <span class="num">10</span>, <span class="num">9</span>, color(<span class="num">255</span>, <span class="num">255</span>, <span class="num">255</span>))
+<span class="kw">end</span>)</pre>
+    </section>
+
+    <section id="meta">
+      <h2>Описание скрипта</h2>
+      <p class="lead">Необязательная глобальная таблица <code>script</code> - что показывать в списке. Без неё имя берётся из имени файла.</p>
+      <div class="fn"><code>script = { name = "...", author = "...", description = "..." }</code><div>название, автор и описание во вкладке Scripts</div></div>
+    </section>
+
+    <section id="events">
+      <h2>События</h2>
+      <p class="lead"><code>events.on(имя, функция)</code> - на одно событие можно повесить несколько функций.</p>
+      <div class="fn"><code>events.on("tick", fn)</code><div>каждый тик игры, 20 раз в секунду</div></div>
+      <div class="fn"><code>events.on("render2d", fn)</code><div>каждый кадр - рисование на экране</div></div>
+      <div class="fn"><code>events.on("render3d", fn)</code><div>каждый кадр - рисование в мире</div></div>
+      <div class="fn"><code>events.on("chat", fn(text))</code><div>сообщение в чат; вернуть <code>true</code> - скрыть его</div></div>
+      <div class="fn"><code>events.on("key", fn(key, action))</code><div>клавиша (GLFW-код); <code>action</code>: 1 нажата, 0 отпущена</div></div>
+      <div class="fn"><code>events.on("enable" | "disable", fn)</code><div>скрипт включили / выключили</div></div>
+<pre>events.on(<span class="str">"chat"</span>, <span class="kw">function</span>(text)
+  <span class="kw">if</span> text:find(<span class="str">"купи донат"</span>) <span class="kw">then return true end</span> <span class="cm">-- скрыть</span>
+<span class="kw">end</span>)</pre>
+    </section>
+
+    <section id="client">
+      <h2><code>client</code></h2>
+      <div class="fn"><code>client.print(text)</code><div>сообщение в чат, видно только тебе</div></div>
+      <div class="fn"><code>client.say(text)</code><div>написать в чат сервера</div></div>
+      <div class="fn"><code>client.command(cmd)</code><div>выполнить команду: <code>"spawn"</code> или <code>"/spawn"</code></div></div>
+      <div class="fn"><code>client.fps()</code><div>текущий FPS</div></div>
+      <div class="fn"><code>client.time()</code><div>время в миллисекундах</div></div>
+      <div class="fn"><code>client.server()</code><div>адрес сервера, <code>""</code> в одиночной игре</div></div>
+      <div class="fn"><code>client.screen()</code><div>открытый экран, <code>""</code> - ничего не открыто</div></div>
+      <div class="fn"><code>print(...)</code><div>строка в Консоль вкладки Scripts</div></div>
+    </section>
+
+    <section id="player">
+      <h2><code>player</code></h2>
+      <div class="fn"><code>player.exists()</code><div><code>true</code>, если игрок в мире</div></div>
+      <div class="fn"><code>player.name()</code><div>ник</div></div>
+      <div class="fn"><code>player.pos()</code><div>x, y, z</div></div>
+      <div class="fn"><code>player.velocity()</code><div>скорость x, y, z (блоков за тик)</div></div>
+      <div class="fn"><code>player.yaw() / player.pitch()</code><div>поворот камеры</div></div>
+      <div class="fn"><code>player.setRotation(yaw, pitch)</code><div>повернуть камеру</div></div>
+      <div class="fn"><code>player.health() / player.absorption()</code><div>здоровье, поглощение</div></div>
+      <div class="fn"><code>player.food()</code><div>голод 0-20</div></div>
+      <div class="fn"><code>player.onGround()</code><div>стоит ли на земле</div></div>
+      <div class="fn"><code>player.sprinting() / player.setSprinting(b)</code><div>спринт</div></div>
+      <div class="fn"><code>player.jump()</code><div>прыжок, если на земле</div></div>
+      <div class="fn"><code>player.slot() / player.setSlot(1-9)</code><div>слот хотбара</div></div>
+      <div class="fn"><code>player.item([slot 1-36])</code><div>предмет в руке или слоте: <code>id, count</code></div></div>
+      <div class="fn"><code>player.attack()</code><div>ударить сущность под прицелом</div></div>
+      <div class="fn"><code>player.use()</code><div>использовать предмет в руке</div></div>
+    </section>
+
+    <section id="world">
+      <h2><code>world</code></h2>
+      <div class="fn"><code>world.players()</code><div>игроки рядом (без тебя)</div></div>
+      <div class="fn"><code>world.entities([radius])</code><div>сущности в радиусе, по умолчанию 32</div></div>
+      <div class="fn"><code>world.block(x, y, z)</code><div>id блока, например <code>"minecraft:stone"</code></div></div>
+      <div class="fn"><code>world.dimension()</code><div>измерение, например <code>"minecraft:the_nether"</code></div></div>
+<pre><span class="cm">-- элемент players() / entities():</span>
+{ name = <span class="str">"Nick"</span>, type = <span class="str">"minecraft:player"</span>, x = <span class="num">0</span>, y = <span class="num">64</span>, z = <span class="num">0</span>, distance = <span class="num">5.2</span>, health = <span class="num">20</span> }</pre>
+    </section>
+
+    <section id="modules">
+      <h2><code>modules</code></h2>
+      <div class="fn"><code>modules.list()</code><div>имена всех модулей</div></div>
+      <div class="fn"><code>modules.isEnabled(name)</code><div>включён ли модуль</div></div>
+      <div class="fn"><code>modules.setEnabled(name, b) / modules.toggle(name)</code><div>включить / выключить / переключить</div></div>
+      <div class="fn"><code>modules.get(name, setting)</code><div>значение настройки: boolean, number или string</div></div>
+      <div class="fn"><code>modules.set(name, setting, value)</code><div>изменить настройку</div></div>
+<pre>modules.setEnabled(<span class="str">"KillAura"</span>, <span class="kw">true</span>)
+modules.set(<span class="str">"KillAura"</span>, <span class="str">"Attack Range"</span>, <span class="num">3.2</span>)
+modules.set(<span class="str">"NoSlow"</span>, <span class="str">"Item Mode"</span>, <span class="str">"Adaptive"</span>)</pre>
+    </section>
+
+    <section id="render">
+      <h2><code>render</code></h2>
+      <p class="lead">На экране - только внутри <code>render2d</code>, в мире - только внутри <code>render3d</code>.</p>
+      <div class="fn"><code>render.rect(x, y, w, h, color[, radius])</code><div>прямоугольник со скруглением</div></div>
+      <div class="fn"><code>render.text(text, x, y[, size, color])</code><div>текст, размер 8 и белый по умолчанию</div></div>
+      <div class="fn"><code>render.width(text[, size])</code><div>ширина текста</div></div>
+      <div class="fn"><code>render.screenWidth() / render.screenHeight()</code><div>размер экрана</div></div>
+      <div class="fn"><code>render.box(x1, y1, z1, x2, y2, z2, color[, fill])</code><div>коробка в мире; <code>fill = true</code> - залитая</div></div>
+      <div class="fn"><code>render.line(x1, y1, z1, x2, y2, z2, color)</code><div>линия в мире</div></div>
+    </section>
+
+    <section id="input">
+      <h2><code>input</code></h2>
+      <div class="fn"><code>input.isKeyDown(key)</code><div>зажата ли клавиша: <code>"r"</code>, <code>"space"</code>, <code>"left.shift"</code> или GLFW-код</div></div>
+    </section>
+
+    <section id="timer">
+      <h2><code>timer</code></h2>
+      <div class="fn"><code>timer.after(ms, fn)</code><div>один раз через <code>ms</code> миллисекунд</div></div>
+      <div class="fn"><code>timer.every(ms, fn)</code><div>каждые <code>ms</code> миллисекунд (минимум 50)</div></div>
+    </section>
+
+    <section id="color">
+      <h2><code>color</code></h2>
+      <div class="fn"><code>color(r, g, b[, a])</code><div>цвет для <code>render.*</code>; <code>a</code> по умолчанию 255. Можно и числом: <code>0xFFFFFFFF</code></div></div>
+    </section>
+
+    <section id="limits">
+      <h2>Ограничения</h2>
+      <div class="note">Скрипты работают в песочнице: нет доступа к файлам, ОС и Java (<code>io</code>, <code>os</code>, <code>luajava</code>, <code>require</code>, <code>load</code>, <code>dofile</code>). У каждого события есть лимит инструкций - бесконечный цикл не повесит игру, скрипт остановится с ошибкой. Ошибка выключает обработчики скрипта; исправь файл и нажми <b>Обновить</b>. Доступны <code>string</code>, <code>table</code>, <code>math</code>, <code>bit32</code>.</div>
+    </section>
+
+    <section id="examples">
+      <h2>Примеры</h2>
+      <p class="lead">Готовые скрипты - в папке <a href="https://github.com/Mazix-Sampay/felon-scripts-api/tree/main/examples">examples</a>.</p>
+      <div class="fn"><code>speed_hud.lua</code><div>плашка со скоростью, FPS и игроками рядом</div></div>
+      <div class="fn"><code>player_boxes.lua</code><div>коробки вокруг игроков через render3d</div></div>
+      <div class="fn"><code>chat_filter.lua</code><div>скрывает рекламу в чате</div></div>
+      <div class="fn"><code>auto_eat_alert.lua</code><div>голод, низкое HP и KillAura на клавишу G</div></div>
+    </section>
+  </main>
+</div>
+<footer>Felon Scripts API · документация для скриптов клиента Felon</footer>
+<script>
+(function () {
+  var root = document.documentElement;
+  try { var t = localStorage.getItem("theme"); if (t) root.setAttribute("data-theme", t); } catch (e) {}
+  document.getElementById("theme").onclick = function () {
+    var dark = root.getAttribute("data-theme") === "dark" ||
+      (!root.getAttribute("data-theme") && matchMedia("(prefers-color-scheme: dark)").matches);
+    var next = dark ? "light" : "dark";
+    root.setAttribute("data-theme", next);
+    try { localStorage.setItem("theme", next); } catch (e) {}
+  };
+  var q = document.getElementById("q");
+  q.oninput = function () {
+    var s = q.value.trim().toLowerCase();
+    document.querySelectorAll(".fn").forEach(function (el) {
+      el.classList.toggle("hidden", s && el.textContent.toLowerCase().indexOf(s) < 0);
+    });
+    document.querySelectorAll("section").forEach(function (sec) {
+      var fns = sec.querySelectorAll(".fn");
+      var visible = sec.querySelectorAll(".fn:not(.hidden)").length;
+      sec.classList.toggle("hidden", s && fns.length && !visible);
+    });
+  };
+  var links = document.querySelectorAll("nav a");
+  var spy = function () {
+    var cur = null;
+    document.querySelectorAll("section").forEach(function (sec) {
+      if (sec.getBoundingClientRect().top < 120) cur = sec.id;
+    });
+    links.forEach(function (a) { a.classList.toggle("on", a.getAttribute("href") === "#" + cur); });
+  };
+  addEventListener("scroll", spy, { passive: true });
+  spy();
+})();
+</script>
+</body>
+</html>
